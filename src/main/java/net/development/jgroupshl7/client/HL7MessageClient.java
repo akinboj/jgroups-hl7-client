@@ -1,8 +1,7 @@
 package net.development.jgroupshl7.client;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStreamReader;
+import java.net.ServerSocket;
 import java.net.Socket;
 
 import org.jgroups.JChannel;
@@ -15,8 +14,10 @@ public class HL7MessageClient {
     private static final String JGROUPS_CONFIG_FILE = "tcp.xml";
     private static final String REMOTE_HL7_SERVER_HOST = "192.168.0.17";
     private static final int REMOTE_HL7_SERVER_PORT = 2100;
+    private static final int LOCAL_HL7_SERVER_PORT = 3200;
 
     private JChannel channel;
+    private ServerSocket localServerSocket;
 
     public void start() throws Exception {
         HL7MessageReceiver hl7receiver = new HL7MessageReceiver();
@@ -26,26 +27,41 @@ public class HL7MessageClient {
 
         hl7receiver.receiveMessages();
 
-        // Prompt the user to enter an HL7 message
-        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-        System.out.print("=**=>Send HL7 message (or 'exit' to quit): ");
-        String hl7Message = reader.readLine();
-
-        while (!hl7Message.equalsIgnoreCase("exit")) {
-            sendHL7MessageToServer(hl7Message);
-            System.out.print("=**=>Send HL7 message (or 'exit' to quit): ");
-            hl7Message = reader.readLine();
-        }
+        // Start the local HL7 server
+        startLocalHL7Server();
 
         channel.close();
+        localServerSocket.close();
     }
 
-    private void sendHL7MessageToServer(String hl7Message) {
+    private void startLocalHL7Server() {
+        try {
+            localServerSocket = new ServerSocket(LOCAL_HL7_SERVER_PORT);
+            logger.info("Local HL7 server started on port {}", LOCAL_HL7_SERVER_PORT);
+
+            // Wait for incoming HL7 messages and send ACK, then forward to remote server
+            while (true) {
+                try (Socket clientSocket = localServerSocket.accept()) {
+                    String hl7Message = MLLPAdapter.receiveHL7Message(clientSocket);
+                    logger.info("=**=>Incoming HL7 message: {}", hl7Message);
+                    MLLPAdapter.sendACK(clientSocket, hl7Message);
+                    sendHL7MessageToRemoteServer(hl7Message);
+                } catch (IOException e) {
+                    logger.error("Error handling HL7 message: {}", e.getMessage(), e);
+                }
+            }
+        } catch (IOException e) {
+            logger.error("Error starting local HL7 server: {}", e.getMessage(), e);
+        }
+    }
+
+    private void sendHL7MessageToRemoteServer(String hl7Message) {
         try (Socket serverSocket = new Socket(REMOTE_HL7_SERVER_HOST, REMOTE_HL7_SERVER_PORT)) {
-            MLLPAdapter.sendHL7Message(serverSocket, hl7Message);
+            String mllpMessage = MLLPAdapter.generateMLLPMessage(hl7Message);
+            MLLPAdapter.sendHL7Message(serverSocket, mllpMessage);
             MLLPAdapter.receiveACK(serverSocket);
         } catch (IOException e) {
-            logger.error("Error sending HL7 message to server: {}", e.getMessage(), e);
+            logger.error("Error sending HL7 message to remote server: {}", e.getMessage(), e);
         }
     }
 }
