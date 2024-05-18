@@ -4,6 +4,7 @@ import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
+// Common class for date/time formatting
 public class DateFormatter {
     public static String formatDate(ZonedDateTime dateTime) {
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyMMdd'T'HHmmssX");
