@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import org.jgroups.JChannel;
+import org.jgroups.Message;
+import org.jgroups.ObjectMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,6 +48,9 @@ public class HL7MessageClient {
                     logger.info("=**=>Incoming HL7 message: {}", hl7Message);
                     MLLPAdapter.sendACK(clientSocket, hl7Message);
                     sendHL7MessageToRemoteServer(hl7Message);
+                    
+                    // Forward the HL7 message to other pods in the cluster using JGroups
+                    forwardHL7MessageToCluster(hl7Message.getBytes());
                 } catch (IOException e) {
                     logger.error("Error handling HL7 message: {}", e.getMessage(), e);
                 }
@@ -62,6 +67,17 @@ public class HL7MessageClient {
             MLLPAdapter.receiveACK(serverSocket);
         } catch (IOException e) {
             logger.error("Error sending HL7 message to remote server: {}", e.getMessage(), e);
+        }
+    }
+    
+    private void forwardHL7MessageToCluster(byte[] hl7MessageBytes) {
+        try {
+            Message message = new ObjectMessage(null, hl7MessageBytes);
+            message.setFlag(Message.Flag.DONT_BUNDLE);
+            message.setFlag(Message.Flag.OOB);
+            channel.send(message);
+        } catch (Exception e) {
+            logger.error("Error forwarding HL7 message to cluster: {}", e.getMessage(), e);
         }
     }
 }
