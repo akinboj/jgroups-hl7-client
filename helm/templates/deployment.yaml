@@ -23,6 +23,7 @@ spec:
         version: "{{ .Values.imageTag }}"
         date: "{{ date "20060102-150405" .Release.Time }}"
     spec:
+      serviceAccountName: jgroups-kubeping-service-account
       {{- if (.Values.acrSecretName) }} 
       imagePullSecrets:
         - name: {{ .Values.acrSecretName }}

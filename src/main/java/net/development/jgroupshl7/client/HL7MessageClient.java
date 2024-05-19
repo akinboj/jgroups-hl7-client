@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 public class HL7MessageClient {
     private static final Logger logger = LoggerFactory.getLogger(HL7MessageClient.class);
     private static final String JGROUPS_CLUSTER_NAME = "HL7Cluster";
-    private static final String JGROUPS_CONFIG_FILE = "tcp.xml";
+    private static final String JGROUPS_CONFIG_FILE = "kube.xml";
     private static final String REMOTE_HL7_SERVER_HOST = "host.docker.internal";
     private static final int REMOTE_HL7_SERVER_PORT = 2100;
     private static final int LOCAL_HL7_SERVER_PORT = 3200;
