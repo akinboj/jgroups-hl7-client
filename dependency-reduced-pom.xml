@@ -7,7 +7,38 @@
   <version>1.0.0-SNAPSHOT</version>
   <description>HL7 communication with JGroups - Client mode</description>
   <build>
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>**/*.xsd</include>
+        </includes>
+      </resource>
+    </resources>
     <plugins>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-war-plugin</artifactId>
+        <version>3.3.1</version>
+        <configuration>
+          <failOnMissingWebXml>false</failOnMissingWebXml>
+        </configuration>
+      </plugin>
+      <plugin>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.8.1</version>
+        <configuration>
+          <source>${maven.compiler.source}</source>
+          <target>${maven.compiler.target}</target>
+        </configuration>
+      </plugin>
       <plugin>
         <artifactId>maven-shade-plugin</artifactId>
         <version>3.2.4</version>
@@ -17,25 +48,15 @@
             <goals>
               <goal>shade</goal>
             </goals>
+            <configuration>
+              <transformers>
+                <transformer>
+                  <mainClass>net.development.jgroupshl7.client.HL7StartInterface</mainClass>
+                </transformer>
+              </transformers>
+            </configuration>
           </execution>
         </executions>
-        <configuration>
-          <transformers>
-            <transformer>
-              <mainClass>net.development.jgroupshl7.client.HL7StartInterface</mainClass>
-            </transformer>
-          </transformers>
-          <filters>
-            <filter>
-              <artifact>*:*</artifact>
-              <excludes>
-                <exclude>META-INF/*.SF</exclude>
-                <exclude>META-INF/*.DSA</exclude>
-                <exclude>META-INF/*.RSA</exclude>
-              </excludes>
-            </filter>
-          </filters>
-        </configuration>
       </plugin>
     </plugins>
   </build>
@@ -43,5 +64,6 @@
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.source>11</maven.compiler.source>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <undertow.version>2.2.8.Final</undertow.version>
   </properties>
 </project>
