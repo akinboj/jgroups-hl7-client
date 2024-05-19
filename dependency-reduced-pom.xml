@@ -12,6 +12,7 @@
         <directory>src/main/resources</directory>
         <includes>
           <include>**/*.xsd</include>
+          <include>kube.xml</include>
         </includes>
       </resource>
     </resources>
