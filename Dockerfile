@@ -18,6 +18,6 @@ COPY target/hl7messagingClient-1.0.0-SNAPSHOT.jar /app/hl7messagingClient-1.0.0-
 
 # Kube probes
 RUN touch /tmp/healthy
-RUN echo "hl7 undertow server is running" > /tmp/healthy
+RUN echo "JGroups hl7 application is running" > /tmp/healthy
 
 ENTRYPOINT ["java", "-jar", "/app/hl7messagingClient-1.0.0-SNAPSHOT.jar"]

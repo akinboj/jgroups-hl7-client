@@ -30,18 +30,6 @@ spec:
       {{- end }}
       containers:
       - env:
-        - name: AUTHORISATION_REALM_NAME
-          value: {{ .Values.authorisationRealmName }}
-        - name: AUTHORISATION_SERVER_HOST_AND_PORT
-          value: {{ .Values.authorisationServerHostAndPort }}
-        {{- if (.Values.authorisationExternalRealmURL) }} 
-        - name: EXTERNAL_REALM_URL
-          value: {{ .Values.authorisationExternalRealmURL }}          
-        {{- end }}
-        {{- if (.Values.hapiSocketTimeoutInSecs) }} 
-        - name: HAPI_SOCKET_TIMEOUT_IN_SECS
-          value: {{ .Values.hapiSocketTimeoutInSecs }}
-        {{- end }}
         {{- if (.Values.dnsEntry) }} 
         - name: DNS_ENTRY
           value: {{ .Values.dnsEntry }}
@@ -54,27 +42,6 @@ spec:
         - name: {{ upper .Values.serviceName | replace "-" "_" }}_{{ upper .Release.Namespace | replace "-" "_" }}_EXTERNAL_DNS_ENTRY
           value: {{ .Values.externalDnsEntry }}
         {{- end }}
-        {{- if (.Values.authSvcIP) }} 
-        - name: AUTH_SVC_IP
-          value: {{ .Values.authSvcIP }}          
-        {{- end }}
-        {{- if (.Values.ladonSvcIP) }} 
-        - name: LADON_SVC_IP
-          value: {{ .Values.ladonSvcIP }}          
-        {{- end }}
-        {{- if (.Values.wildflyAdminUser) }} 
-        - name: WILDFLY_MANAGEMENT_USER
-          value: {{ .Values.wildflyAdminUser }}
-        # TODO this should be a secret, or potentially no management user at all
-        - name: WILDFLY_MANAGEMENT_PASSWORD
-          value: {{ .Values.wildflyAdminPwd }}
-        {{- end }}
-        - name: WILDFLY_LOG_LEVEL
-          value: "{{ .Values.wildflyLogLevel | default "WARN" }}"
-        - name: JAVAX_NET_DEBUG
-          value: "{{ .Values.javaxNetDebug | default "none" }}"
-        - name: WILDFLY_ENABLE_DEBUG
-          value: "{{ .Values.wildflyEnableDebug | default "no" }}"
         - name: KUBERNETES_SERVICE_NAME
           value: {{ .Values.serviceName }}
         - name: {{ upper .Values.serviceName | replace "-" "_" }}_{{ upper .Release.Namespace | replace "-" "_" }}_KUBERNETES_SERVICE_NAME
@@ -83,16 +50,6 @@ spec:
           value: {{ .Release.Namespace }}
         - name: {{ upper .Values.serviceName | replace "-" "_" }}_{{ upper .Release.Namespace | replace "-" "_" }}_KUBERNETES_NAMESPACE
           value: {{ .Release.Namespace }}
-        - name: DEPLOYMENT_FILE_NAME
-          value: {{ .Values.deploymentFileName }}
-        - name: SYSTEM_ADMIN_FAILURE_NOTIFICATION_EMAIL
-          value: {{ .Values.systemAdminFailureNotificationEmail }}
-        - name: FAILURE_NOTIFICATION_SENDER_EMAIL
-          value: {{ .Values.failureNotificationSenderEmail }}
-        - name: {{ upper .Values.serviceName | replace "-" "_" }}_{{ upper .Release.Namespace | replace "-" "_" }}_BASE_PORT_INSIDE_POD
-          value: "{{ .Values.basePortInsidePod | default .Values.basePort }}"
-        - name: {{ upper .Values.serviceName | replace "-" "_" }}_{{ upper .Release.Namespace | replace "-" "_" }}_BASE_PORT
-          value: "{{ .Values.basePort }}"
         - name: HELM_RELEASE_TIME
           value: "{{ date "20060102-150405" .Release.Time }}"
         - name: MY_HOST_IP
@@ -141,6 +98,9 @@ spec:
         ports:
         - containerPort: 3200
           name: http
+          protocol: TCP
+        - containerPort: 7800
+          name: jgroups
           protocol: TCP
         - containerPort: 9779
           name: prometheus

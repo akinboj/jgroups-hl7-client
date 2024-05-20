@@ -5,6 +5,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 
 import org.jgroups.JChannel;
+import org.jgroups.Message;
+import org.jgroups.ObjectMessage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,12 +22,13 @@ public class HL7MessageClient {
     private ServerSocket localServerSocket;
 
     public void start() throws Exception {
-        HL7MessageReceiver hl7receiver = new HL7MessageReceiver();
         channel = new JChannel(JGROUPS_CONFIG_FILE);
+        HL7MessageReceiver hl7receiver = new HL7MessageReceiver();
         channel.setReceiver(hl7receiver);
         channel.connect(JGROUPS_CLUSTER_NAME);
-
-        hl7receiver.receiveMessages();
+        
+        // Set the local address in the receiver after connecting the channel
+        hl7receiver.setLocalAddress(channel.getAddress());
 
         // Start the local HL7 server
         startLocalHL7Server();
@@ -43,9 +46,12 @@ public class HL7MessageClient {
             while (true) {
                 try (Socket clientSocket = localServerSocket.accept()) {
                     String hl7Message = MLLPAdapter.receiveHL7Message(clientSocket);
-                    logger.info("=**=>Incoming HL7 message: {}", hl7Message);
+                    logger.info("=**=> Incoming HL7 message: {}", hl7Message);
                     MLLPAdapter.sendACK(clientSocket, hl7Message);
                     sendHL7MessageToRemoteServer(hl7Message);
+                    
+                    // Forward the HL7 message to other pods in the cluster using JGroups
+                    forwardHL7MessageToCluster(hl7Message);
                 } catch (IOException e) {
                     logger.error("Error handling HL7 message: {}", e.getMessage(), e);
                 }
@@ -62,6 +68,15 @@ public class HL7MessageClient {
             MLLPAdapter.receiveACK(serverSocket);
         } catch (IOException e) {
             logger.error("Error sending HL7 message to remote server: {}", e.getMessage(), e);
+        }
+    }
+    
+    private void forwardHL7MessageToCluster(String hl7Message) {
+        try {
+            Message jgroupsMessage = new ObjectMessage(null, hl7Message);
+            channel.send(jgroupsMessage);
+        } catch (Exception e) {
+            logger.error("Error forwarding HL7 message to cluster: {}", e.getMessage(), e);
         }
     }
 }

@@ -8,7 +8,7 @@
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xmlns="urn:org:jgroups"
         xsi:schemaLocation="urn:org:jgroups http://www.jgroups.org/schema/jgroups.xsd">
-    <TCP bind_addr="${jgroups.bind_addr:site_local}"
+    <TCP bind_addr="${jgroups.bind_addr:match-interface:eth0}"
          bind_port="${jgroups.bind_port:7800}"
          external_addr="${jgroups.external_addr}"
          external_port="${jgroups.external_port}"
@@ -18,8 +18,8 @@
     
      <org.jgroups.protocols.kubernetes.KUBE_PING
         port_range="1"
-        namespace="${KUBE_NAMESPACE:jgroups-example}"
-        labels="${KUBE_LABEL:cluster=nyc}"/>
+        namespace="${KUBERNETES_NAMESPACE}"
+        labels="${KUBERNETES_LABELS}"/>
 
     <MERGE3 max_interval="30000"
             min_interval="10000"/>
