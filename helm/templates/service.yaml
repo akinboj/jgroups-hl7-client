@@ -28,22 +28,3 @@ spec:
   {{- if (.Values.loadBalancerIP) }}
   loadBalancerIP: {{ .Values.loadBalancerIP }}
   {{- end }}
-
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: {{ .Values.serviceName }}-headless
-  labels:
-    app: {{ .Values.serviceName }}
-    version: "{{ .Values.imageTag }}"
-spec:
-  clusterIP: None # Set this to 'None' to create a headless service
-  ports:
-  - name: discovery
-    port: {{ add 0 .Values.basePort }}
-    protocol: TCP
-    targetPort: 3200
-  selector:
-    app: {{ .Values.serviceName }}
-  type: ClusterIP
