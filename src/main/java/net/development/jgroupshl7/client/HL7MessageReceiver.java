@@ -1,5 +1,7 @@
 package net.development.jgroupshl7.client;
 
+import java.nio.charset.StandardCharsets;
+
 import org.jgroups.Address;
 import org.jgroups.Message;
 import org.jgroups.Receiver;
@@ -31,7 +33,21 @@ public class HL7MessageReceiver implements Receiver {
         }
 
         try {
-            String hl7Message = msg.getObject();
+            // Retrieve the object from the message
+            Object obj = msg.getObject();
+
+            // Check if the object is a byte array and convert it to a string
+            String hl7Message;
+            if (obj instanceof byte[]) {
+                byte[] buffer = (byte[]) obj;
+                hl7Message = new String(buffer, StandardCharsets.UTF_8);
+            } else if (obj instanceof String) {
+                hl7Message = (String) obj;
+            } else {
+                logger.error("Received an unsupported message type: {}", obj.getClass().getName());
+                return;
+            }
+
             // Get the sender address
             String senderAddress = msg.getSrc().toString();
             logger.info("=**=>Received Forwarded HL7 message from JGroups member::[{}]\n{}", senderAddress, hl7Message);
