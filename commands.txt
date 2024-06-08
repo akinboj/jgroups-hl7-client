@@ -5,4 +5,4 @@ mvn clean install -DskipTests
 docker build --rm -t interface-hl7messaging-jgroups:1.0.0-snapshot --file Dockerfile .
 
 # Deploy to microservice
-helm upgrade interface-hl7messaging-jgroups-site-a --install --namespace site-a --set serviceName=interface-hl7messaging-jgroups,basePort=30410,imageTag=1.0.0-snapshot,numOfPods=1 helm
+helm upgrade interface-hl7messaging-jgroups-site-a --install --namespace site-a --set serviceName=interface-hl7messaging-jgroups,mqHost=interface-hl7message-broker.site-a,mqUser=integration,basePort=30410,mqPort=30471,imageTag=1.0.0-snapshot,numOfPods=1 helm
