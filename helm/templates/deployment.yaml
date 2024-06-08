@@ -42,6 +42,17 @@ spec:
         - name: {{ upper .Values.serviceName | replace "-" "_" }}_{{ upper .Release.Namespace | replace "-" "_" }}_EXTERNAL_DNS_ENTRY
           value: {{ .Values.externalDnsEntry }}
         {{- end }}
+        - name: RABBITMQ_HOST
+          value: {{ .Values.mqHost }}
+        - name: RABBITMQ_PORT
+          value: "{{ .Values.mqPort }}"
+        - name: RABBITMQ_USERNAME
+          value: {{ .Values.mqUser }}
+        - name: RABBITMQ_PASSWORD
+          valueFrom:
+           secretKeyRef:
+            name: aether-itops-replica-storage-secrets
+            key: keyPassword
         - name: KUBERNETES_SERVICE_NAME
           value: {{ .Values.serviceName }}
         - name: {{ upper .Values.serviceName | replace "-" "_" }}_{{ upper .Release.Namespace | replace "-" "_" }}_KUBERNETES_SERVICE_NAME
